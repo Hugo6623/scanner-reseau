@@ -4,6 +4,16 @@ import time
 def ports_valides(debut, fin):
     return 1 <= debut <= fin <= 65535
 
+
+def resoudre_cible(target):
+    try:
+        ip = socket.gethostbyname(target)
+        return ip
+
+    except socket.gaierror:
+        return None
+
+
 def scan_port(target, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(0.5)
@@ -31,24 +41,36 @@ def scan(target, ports):
     return ports_ouverts
 
 
-
 #ports = [22, 80, 443, 8000]
+# Programme principal
 
-target = input("Adresse IP cible : ")
+target = input("Adresse IP ou nom de domaine : ")
 
-debut_port = int(input("Premier port : "))
-fin_port = int(input("Dernier port : "))
+ip = resoudre_cible(target)
 
-if not ports_valides(debut_port, fin_port):
-    print("Erreur : plage de ports invalide")
+if ip is None:
+    print("Erreur : impossible de résoudre l'adresse")
+
 else:
-    ports = range(debut_port, fin_port + 1)
+    print(f"Adresse IP : {ip}")
 
-    debut = time.time()
-    ports_ouverts = scan(target, ports)
-    fin = time.time()
+    try:
+        debut_port = int(input("Premier port : "))
+        fin_port = int(input("Dernier port : "))
 
-    print(f"{ports_ouverts} port(s) ouvert(s)")
-    print(f"Durée du scan : {fin - debut:.2f} secondes")
-    print("Scan terminé")
+    except ValueError:
+        print("Erreur : veuillez entrer des nombres entiers")
 
+    else:
+        if not ports_valides(debut_port, fin_port):
+            print("Erreur : plage de ports invalide")
+        else:
+            ports = range(debut_port, fin_port + 1)
+
+            debut = time.time()
+            ports_ouverts = scan(ip, ports)
+            fin = time.time()
+
+            print(f"{ports_ouverts} port(s) ouvert(s)")
+            print(f"Durée du scan : {fin - debut:.2f} secondes")
+            print("Scan terminé")
