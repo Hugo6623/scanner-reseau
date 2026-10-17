@@ -11,6 +11,8 @@ L'objectif est d'améliorer le scanner petit à petit en ajoutant de nouvelles f
 - Afficher le service associé à un port (HTTP, SSH...)
 - Vérifier que la plage de ports est valide
 - Afficher le nombre de ports ouverts et la durée du scan
+- Accepter une adresse IP ou un nom de domaine
+- Gérer les erreurs de saisie et de résolution d'adresse
 
 ## Utilisation
 
@@ -33,7 +35,6 @@ Dernier port : 1000
 ## Améliorations prévues
 
 - Améliorer la gestion des erreurs
-- Pouvoir scanner un nom de domaine
 - Accélérer le scan avec des threads
 - Récupérer plus d'informations sur les services
 - Sauvegarder les résultats dans un fichier
