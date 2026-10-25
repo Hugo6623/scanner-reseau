@@ -1,70 +1,8 @@
-import socket
 import time
-from concurrent.futures import ThreadPoolExecutor
 
+from scan_tcp import scan, scan_thread
+from utils import ports_valides, resoudre_cible
 
-def ports_valides(debut, fin):
-    return 1 <= debut <= fin <= 65535
-
-
-def resoudre_cible(target):
-    try:
-        ip = socket.gethostbyname(target)
-        return ip
-
-    except socket.gaierror:
-        return None
-
-
-def scan_port(target, port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.5)
-    resultat = sock.connect_ex((target, port))
-    sock.close()
-    if resultat == 0:
-        return True
-    else:
-        return False
-
-
-def scan(target, ports):
-    ports_ouverts = 0
-
-    for port in ports:
-        if scan_port(target, port):
-            ports_ouverts += 1
-            try:
-                service = socket.getservbyport(port, "tcp")
-            except OSError:
-                service = "inconnu"
-
-            print(f"Port {port} : ouvert ({service})")
-
-    return ports_ouverts
-
-
-def scan_thread(target, ports):
-    ports_ouverts = 0
-
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        resultats = executor.map(lambda port: scan_port(target, port),ports)
-
-        for port, ouvert in zip(ports, resultats):
-            if ouvert:
-                ports_ouverts += 1
-
-                try:
-                    service = socket.getservbyport(port, "tcp")
-                except OSError:
-                    service = "inconnu"
-
-                print(f"Port {port} : ouvert ({service})")
-
-    return ports_ouverts
-
-#ports = [22, 80, 443, 8000]
-# Programme principal
-""""
 target = input("Adresse IP ou nom de domaine : ")
 
 ip = resoudre_cible(target)
@@ -85,37 +23,28 @@ else:
     else:
         if not ports_valides(debut_port, fin_port):
             print("Erreur : plage de ports invalide")
+
         else:
             ports = range(debut_port, fin_port + 1)
+            print("1 - Scan séquentiel")
+            print("2 - Scan multithreadé")
 
-            debut = time.time()
-            ports_ouverts = scan(ip, ports)
-            fin = time.time()
+            choix = input("Votre choix : ")
 
-            print(f"{ports_ouverts} port(s) ouvert(s)")
-            print(f"Durée du scan : {fin - debut:.2f} secondes")
-            print("Scan terminé")
+            debut = time.perf_counter()
+            
+            if choix == "1":
+                ports_ouverts = scan(ip, ports)
 
-"""
-target = "127.0.0.1"
-ports = range(7990, 8011)
+            elif choix == "2":
+                ports_ouverts = scan_thread(ip, ports)
 
-# Scan séquentiel
-print("=== Scan séquentiel ===")
+            else:
+                print("Choix invalide")
 
-debut = time.perf_counter()
-scan(target, ports)
-fin = time.perf_counter()
+            if choix == "1" or choix == "2":
+                fin = time.perf_counter()
 
-print(f"Durée : {fin - debut:.4f} secondes")
-
-
-# Scan multithreadé
-print("\n=== Scan multithreadé ===")
-
-debut = time.perf_counter()
-nb_ouverts = scan_thread(target, ports)
-print(f"{nb_ouverts} port(s) ouvert(s)")
-fin = time.perf_counter()
-
-print(f"Durée : {fin - debut:.4f} secondes")
+                print(f"{ports_ouverts} port(s) ouvert(s)")
+                print(f"Durée du scan : {fin - debut:.4f} secondes")
+                print("Scan terminé")
