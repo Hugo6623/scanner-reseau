@@ -1,9 +1,9 @@
 import socket
 from concurrent.futures import ThreadPoolExecutor
 
-def scan_port(target, port):
+def scan_port(target, port,timeout):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(0.5)
+    sock.settimeout(timeout)
     resultat = sock.connect_ex((target, port))
     sock.close()
     if resultat == 0:
@@ -11,11 +11,11 @@ def scan_port(target, port):
     else:
         return False
 
-def scan(target, ports):
+def scan(target, ports,timeout):
     ports_ouverts = 0
-
+    resultats_scan = []
     for port in ports:
-        if scan_port(target, port):
+        if scan_port(target, port,timeout):
             ports_ouverts += 1
             try:
                 service = socket.getservbyport(port, "tcp")
@@ -23,15 +23,16 @@ def scan(target, ports):
                 service = "inconnu"
 
             print(f"Port {port} : ouvert ({service})")
+            resultats_scan.append([port, service])
 
-    return ports_ouverts
+    return ports_ouverts, resultats_scan
 
 
-def scan_thread(target, ports):
+def scan_thread(target, ports,timeout):
     ports_ouverts = 0
-
+    resultats_scan = []
     with ThreadPoolExecutor(max_workers=10) as executor:
-        resultats = executor.map(lambda port: scan_port(target, port),ports)
+        resultats = executor.map(lambda port: scan_port(target, port,timeout),ports)
 
         for port, ouvert in zip(ports, resultats):
             if ouvert:
@@ -43,5 +44,6 @@ def scan_thread(target, ports):
                     service = "inconnu"
 
                 print(f"Port {port} : ouvert ({service})")
+                resultats_scan.append([port, service])
 
-    return ports_ouverts
+    return ports_ouverts, resultats_scan

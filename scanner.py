@@ -1,7 +1,7 @@
 import time
 
 from scan_tcp import scan, scan_thread
-from utils import ports_valides, resoudre_cible
+from utils import ports_valides, resoudre_cible, export_csv
 
 target = input("Adresse IP ou nom de domaine : ")
 
@@ -26,6 +26,7 @@ else:
 
         else:
             ports = range(debut_port, fin_port + 1)
+            timeout = float(input("Timeout en secondes (ex : 0.5) : "))
             print("1 - Scan séquentiel")
             print("2 - Scan multithreadé")
 
@@ -34,10 +35,10 @@ else:
             debut = time.perf_counter()
             
             if choix == "1":
-                ports_ouverts = scan(ip, ports)
+                ports_ouverts, resultats_scan = scan(ip, ports, timeout)
 
             elif choix == "2":
-                ports_ouverts = scan_thread(ip, ports)
+                ports_ouverts, resultats_scan = scan_thread(ip, ports, timeout)
 
             else:
                 print("Choix invalide")
@@ -47,4 +48,5 @@ else:
 
                 print(f"{ports_ouverts} port(s) ouvert(s)")
                 print(f"Durée du scan : {fin - debut:.4f} secondes")
+                export_csv(resultats_scan)
                 print("Scan terminé")

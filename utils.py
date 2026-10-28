@@ -11,3 +11,10 @@ def resoudre_cible(target):
 
     except socket.gaierror:
         return None
+    
+def export_csv(resultats_scan):
+    with open("resultats.csv", "w") as fichier:
+        fichier.write("port,service\n")
+
+        for port, service in resultats_scan:
+            fichier.write(f"{port},{service}\n")
